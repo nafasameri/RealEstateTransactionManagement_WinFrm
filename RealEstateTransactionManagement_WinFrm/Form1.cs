@@ -75,14 +75,30 @@ namespace RealEstateTransactionManagement_WinFrm
             try { House.ColdSystem = cmbColdSystem.SelectedItem.ToString(); } catch { }
             try { House.HeatSystem = cmbHeatSystem.SelectedItem.ToString(); } catch { }
             try { House.CoverWall = cmbCoverWall.SelectedItem.ToString(); } catch { }
-            try { if (cmbYard.SelectedItem.ToString() == "Yes") House.YardArea = int.Parse(txbYard.Text);
-                else House.YardArea = 0; } catch { }
-            try { if (cmbTerrace.SelectedItem.ToString() == "Yes") House.TerraceArea = int.Parse(txbTerrace.Text);
-                else House.TerraceArea = 0; } catch { }
+            try
+            {
+                if (cmbYard.SelectedItem.ToString() == "Yes")
+                {
+                    House.yard = cmbYard.SelectedItem.ToString();
+                    House.YardArea = int.Parse(txbYard.Text);
+                }
+                else House.YardArea = 0;
+            }
+            catch { }
+            try
+            {
+                if (cmbTerrace.SelectedItem.ToString() == "Yes")
+                {
+                    House.terrace = cmbTerrace.SelectedItem.ToString();
+                    House.TerraceArea = int.Parse(txbTerrace.Text);
+                }
+                else House.TerraceArea = 0;
+            }
+            catch { }
 
             sqlCommand.CommandText = "INSERT INTO tblHouses (HomeType, TypeProducts, Price, Rent, FloorArea, Floor, YardArea, Yard, TerraceArea, Terrace, NumOfRooms, HeatSystem, ColdSystem, CoverWall) " +
                 " VALUES(@p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14)";
-            sqlCommand.Connection = Connection; 
+            sqlCommand.Connection = Connection;
             sqlCommand.Parameters.AddWithValue("p1", House.HomeType);
             sqlCommand.Parameters.AddWithValue("p2", House.TypeProducts);
             sqlCommand.Parameters.AddWithValue("p3", House.Price);
@@ -100,7 +116,7 @@ namespace RealEstateTransactionManagement_WinFrm
             sqlCommand.ExecuteNonQuery();
         }
 
-        private void FillGrid(string sql = "SELECT * FROM tblHouses")
+        private void FillGrid(string sql = "EXEC [dbo].[sp_getHouse] @_id = -1")
         {
             sqlCommand.CommandText = sql;
             sqlCommand.Connection = Connection;
@@ -139,20 +155,35 @@ namespace RealEstateTransactionManagement_WinFrm
             cmbHomeType.DataBindings.Add("text", dataSet, "T1.HomeType");
 
             cr = (CurrencyManager)this.BindingContext[dataSet, "T1"];
-
         }
 
         private void btnGetData_Click(object sender, EventArgs e)
         {
             grbGetData.Visible = true;
             grbShowData.Visible = false;
+            grbSearchData.Visible = false;
         }
 
         private void btnShowData_Click(object sender, EventArgs e)
         {
             grbShowData.Visible = true;
             grbGetData.Visible = false;
-            FillGrid();
+            grbSearchData.Visible = false;
+            FillGrid("EXEC [dbo].[sp_getHouse] @_id = -1");
+        }
+
+        private void btnSearchData_Click(object sender, EventArgs e)
+        {
+            grbShowData.Visible = false;
+            grbGetData.Visible = false;
+            grbSearchData.Visible = true;
+            int id = -1;
+            FillGrid("EXEC [dbo].[sp_getHouse] @_id = " + id);
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
